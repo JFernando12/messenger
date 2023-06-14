@@ -64,11 +64,13 @@ const AuthForm = () => {
           <div className="absolute inset-0 flex items-center">
             <div className="border-t w-full" />
           </div>
-          <div className="">holis</div>
+          <div className="relative flex justify-center">
+            <span className="bg-white px-2 text-sm text-gray-500">Or continue with</span>
+          </div>
         </div>
         {/* Botones de redes sociales */}
-        <div className="mt-10">
-          <div>icon1</div>
+        <div className="">
+          <div>Icons</div>
         </div>
       </div>
       <div className="flex gap-2 justify-center text-sm mt-6 px-2 text-gray-500">
