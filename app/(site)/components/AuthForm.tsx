@@ -3,11 +3,15 @@ import React, { useState } from 'react';
 import Input from '@/app/components/inputs/Input';
 import Button from '@/app/components/Button';
 import { useForm, FieldValues, SubmitHandler } from 'react-hook-form';
+import AuthSocialButton from './AuthSocialButton';
+import { BsGithub, BsGoogle } from 'react-icons/bs';
+import { signIn } from 'next-auth/react';
 
 type Variant = 'LOGIN' | 'REGISTER';
 
 const AuthForm = () => {
   const [variant, setVariant] = useState<Variant>('LOGIN');
+  const [isLoading, setIsLoading] = useState(false);
 
   const {
     register,
@@ -23,6 +27,12 @@ const AuthForm = () => {
 
   const toggleVariant = () => {
     setVariant((prev) => (prev === 'LOGIN' ? 'REGISTER' : 'LOGIN'));
+  };
+
+  const socialAction = (action: 'github' | 'google') => {
+    setIsLoading(true);
+    signgn;
+    setIsLoading(false);
   };
 
   return (
@@ -65,12 +75,21 @@ const AuthForm = () => {
             <div className="border-t w-full" />
           </div>
           <div className="relative flex justify-center">
-            <span className="bg-white px-2 text-sm text-gray-500">Or continue with</span>
+            <span className="bg-white text-gray-500 px-2 text-sm">
+              Or continue with
+            </span>
           </div>
         </div>
         {/* Botones de redes sociales */}
         <div className="">
-          <div>Icons</div>
+          <AuthSocialButton
+            icon={BsGithub}
+            onClick={() => socialAction('github')}
+          />
+          <AuthSocialButton
+            icon={BsGoogle}
+            onClick={() => socialAction('google')}
+          />
         </div>
       </div>
       <div className="flex gap-2 justify-center text-sm mt-6 px-2 text-gray-500">
