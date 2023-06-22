@@ -1,17 +1,28 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Input from '@/app/components/inputs/Input';
 import Button from '@/app/components/Button';
-import { useForm, FieldValues, SubmitHandler } from 'react-hook-form';
+import { useForm, FieldValues } from 'react-hook-form';
 import AuthSocialButton from './AuthSocialButton';
 import { BsGithub, BsGoogle } from 'react-icons/bs';
-import { signIn } from 'next-auth/react';
+import { signIn, useSession } from 'next-auth/react';
+import { toast } from 'react-hot-toast';
+import { useRouter } from 'next/navigation';
+import axios from 'axios';
 
 type Variant = 'LOGIN' | 'REGISTER';
 
 const AuthForm = () => {
+  const router = useRouter();
+  const session = useSession();
   const [variant, setVariant] = useState<Variant>('LOGIN');
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (session?.status === 'authenticated') {
+      router.push('/conversations');
+    }
+  }, [session?.status, router]);
 
   const {
     register,
@@ -31,13 +42,65 @@ const AuthForm = () => {
 
   const socialAction = (action: 'github' | 'google') => {
     setIsLoading(true);
-    signgn;
-    setIsLoading(false);
+
+    signIn(action, { redirect: false })
+      .then((callback) => {
+        if (callback?.error) {
+          console.log('error');
+          toast.error('Invalid credentialss!');
+        }
+        if (callback?.ok) {
+          console.log('ok');
+          router.push('/conversations');
+        }
+      })
+      .finally(() => setIsLoading(false));
+  };
+
+  const onSubmit = (data: FieldValues) => {
+    setIsLoading(true);
+
+    if (variant === 'REGISTER') {
+      axios
+        .post('api/register', data)
+        .then(() =>
+          signIn('credentials', {
+            ...data,
+            redirect: false,
+          })
+        )
+        .then((callback) => {
+          if (callback?.error) {
+            toast.error('Invalid credentials!!');
+          }
+          if (callback?.ok) {
+            router.push('/conversations');
+          }
+        })
+        .catch(() => toast.error('Something went wrong!'))
+        .finally(() => setIsLoading(false));
+    }
+
+    if (variant === 'LOGIN') {
+      signIn('credentials', {
+        ...data,
+        redirect: false,
+      })
+        .then((callback) => {
+          if (callback?.error) {
+            toast.error('Invalid credentials!');
+          }
+          if (callback?.ok && !callback?.error) {
+            router.push('/conversations');
+          }
+        })
+        .finally(() => setIsLoading(false));
+    }
   };
 
   return (
     <div className="sm:max-w-md sm:m-auto sm:w-full bg-white px-4 py-8 shadow sm:rounded-lg sm:px-10">
-      <form action="" className="space-y-6">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {variant === 'REGISTER' && (
           <Input
             label="Name"
@@ -64,7 +127,7 @@ const AuthForm = () => {
           errors={errors}
           required
         />
-        <Button fullWidth>
+        <Button fullWidth disabled={isLoading} type="submit">
           {variant === 'LOGIN' ? 'Sign in' : 'Register'}
         </Button>
       </form>
@@ -81,7 +144,7 @@ const AuthForm = () => {
           </div>
         </div>
         {/* Botones de redes sociales */}
-        <div className="">
+        <div className="mt-6 flex gap-2">
           <AuthSocialButton
             icon={BsGithub}
             onClick={() => socialAction('github')}

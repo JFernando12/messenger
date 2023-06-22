@@ -26,7 +26,7 @@ const authOptions: AuthOptions = {
           throw new Error('Invalid credentials');
         }
 
-        const user = prisma.user.findUnique({
+        const user = await prisma.user.findUnique({
           where: {
             email: credentials.email,
           },
@@ -49,6 +49,11 @@ const authOptions: AuthOptions = {
       },
     }),
   ],
+  debug: process.env.NODE_ENV === 'development',
+  session: {
+    strategy: 'jwt',
+  },
+  secret: process.env.NEXTAUTH_SECRET!,
 };
 
 const handler = NextAuth(authOptions);
